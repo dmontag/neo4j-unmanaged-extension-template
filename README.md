@@ -13,3 +13,9 @@ This is an unmanaged extension.
 
     org.neo4j.server.thirdparty_jaxrs_classes=org.neo4j.example.unmanagedextension=/example
 
+4. Start Neo4j server.
+
+5. Query it over HTTP:
+
+    curl http://localhost:7474/example/helloworld
+
