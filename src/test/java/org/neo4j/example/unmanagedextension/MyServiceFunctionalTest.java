@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.server.NeoServer;
-import org.neo4j.server.helpers.ServerBuilder;
+import org.neo4j.server.helpers.CommunityServerBuilder;
 import org.neo4j.server.rest.JaxRsResponse;
 import org.neo4j.server.rest.RestRequest;
 
@@ -27,7 +27,7 @@ public class MyServiceFunctionalTest {
 
     @Test
     public void shouldReturnFriends() throws IOException {
-        NeoServer server = ServerBuilder.server()
+        NeoServer server = CommunityServerBuilder.server()
                 .withThirdPartyJaxRsPackage("org.neo4j.example.unmanagedextension", MOUNT_POINT)
                 .build();
         server.start();
