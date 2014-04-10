@@ -3,6 +3,7 @@ package org.neo4j.example.unmanagedextension;
 import com.sun.jersey.api.client.Client;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.server.NeoServer;
@@ -16,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class MyServiceFunctionalTest {
 
@@ -35,8 +37,14 @@ public class MyServiceFunctionalTest {
         RestRequest restRequest = new RestRequest(server.baseUri().resolve(MOUNT_POINT), CLIENT);
         JaxRsResponse response = restRequest.get("service/friends/B");
         System.out.println(response.getEntity());
+
         List list = objectMapper.readValue(response.getEntity(), List.class);
         assertEquals(new HashSet<String>(Arrays.asList("A", "C")), new HashSet<String>(list));
+
+        assertEquals((Long)4L, ((Long)new ExecutionEngine(server.getDatabase().getGraph())
+                .execute("MATCH (n) WHERE n.lastModified > 0 RETURN count(n)")
+                .iterator().next().get("count(n)")));
+
         server.stop();
     }
 
