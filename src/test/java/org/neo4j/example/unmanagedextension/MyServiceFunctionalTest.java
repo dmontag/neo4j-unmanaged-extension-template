@@ -49,8 +49,8 @@ public class MyServiceFunctionalTest {
     }
 
     private void populateDb(GraphDatabaseService db) {
-        Transaction tx = db.beginTx();
-        try
+
+        try (Transaction tx = db.beginTx())
         {
             Node personA = createPerson(db, "A");
             Node personB = createPerson(db, "B");
@@ -60,10 +60,6 @@ public class MyServiceFunctionalTest {
             personB.createRelationshipTo(personC, KNOWS);
             personC.createRelationshipTo(personD, KNOWS);
             tx.success();
-        }
-        finally
-        {
-            tx.finish();
         }
     }
 

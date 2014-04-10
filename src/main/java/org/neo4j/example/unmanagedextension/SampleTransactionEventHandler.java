@@ -37,10 +37,11 @@ public class SampleTransactionEventHandler implements TransactionEventHandler<Ob
         for (PropertyEntry<Node> nodePropertyEntry : data.assignedNodeProperties()) {
             nodes.add(nodePropertyEntry.entity());
         }
-        for (Node node : data.createdNodes()) {
-            node.setProperty("lastModified", System.currentTimeMillis());
+        long time = System.currentTimeMillis();
+        for (Node node : nodes) {
+            node.setProperty("lastModified", time);
         }
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @Override
