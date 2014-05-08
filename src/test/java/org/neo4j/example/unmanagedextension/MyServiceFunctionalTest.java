@@ -35,11 +35,11 @@ public class MyServiceFunctionalTest {
         server.start();
         populateDb(server.getDatabase().getGraph());
         RestRequest restRequest = new RestRequest(server.baseUri().resolve(MOUNT_POINT), CLIENT);
-        JaxRsResponse response = restRequest.get("service/friends/B");
+        JaxRsResponse response = restRequest.get("service/friendsCypher/B");
         System.out.println(response.getEntity());
 
         List list = objectMapper.readValue(response.getEntity(), List.class);
-        assertEquals(new HashSet<String>(Arrays.asList("A", "C")), new HashSet<String>(list));
+        assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<String>(list));
 
         assertEquals((Long)4L, ((Long)new ExecutionEngine(server.getDatabase().getGraph())
                 .execute("MATCH (n) WHERE n.lastModified > 0 RETURN count(n)")
@@ -64,10 +64,8 @@ public class MyServiceFunctionalTest {
     }
 
     private Node createPerson(GraphDatabaseService db, String name) {
-        Index<Node> people = db.index().forNodes("people");
-        Node node = db.createNode();
+        Node node = db.createNode(MyService.Labels.Person);
         node.setProperty("name", name);
-        people.add(node, "name", name);
         return node;
     }
 

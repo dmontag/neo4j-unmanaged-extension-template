@@ -4,8 +4,12 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.*;
-import org.neo4j.graphdb.index.Index;
+import org.neo4j.server.database.CypherExecutor;
 import org.neo4j.test.ImpermanentGraphDatabase;
 
 import javax.ws.rs.core.Response;
@@ -15,19 +19,24 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
+@RunWith(MockitoJUnitRunner.class)
 public class MyServiceTest {
 
-    private ImpermanentGraphDatabase db;
+    private ImpermanentGraphDatabase graphDb;
     private MyService service;
     private ObjectMapper objectMapper = new ObjectMapper();
     private static final RelationshipType KNOWS = DynamicRelationshipType.withName("KNOWS");
+    @Mock
+    private CypherExecutor cypherExecutor;
 
     @Before
     public void setUp() {
-        db = new ImpermanentGraphDatabase();
-        populateDb(db);
+        graphDb = new ImpermanentGraphDatabase();
+        populateDb(graphDb);
         service = new MyService();
+        when(cypherExecutor.getExecutionEngine()).thenReturn(new ExecutionEngine(graphDb));
     }
 
     private void populateDb(GraphDatabaseService db) {
@@ -50,16 +59,14 @@ public class MyServiceTest {
     }
 
     private Node createPerson(GraphDatabaseService db, String name) {
-        Index<Node> people = db.index().forNodes("people");
-        Node node = db.createNode();
+        Node node = db.createNode(MyService.Labels.Person);
         node.setProperty("name", name);
-        people.add(node, "name", name);
         return node;
     }
 
     @After
     public void tearDown() throws Exception {
-        db.shutdown();
+        graphDb.shutdown();
 
     }
 
@@ -69,13 +76,17 @@ public class MyServiceTest {
     }
 
     @Test
-    public void shouldQueryDbForFriends() throws IOException {
-        Response response = service.getFriends("B", db);
+    public void shouldQueryDbForFriendsWithCypher() throws IOException {
+        Response response = service.getFriendsCypher("B", cypherExecutor);
         List list = objectMapper.readValue((String) response.getEntity(), List.class);
-        assertEquals(new HashSet<String>(Arrays.asList("A", "C")), new HashSet<String>(list));
+        assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<String>(list));
     }
 
-    public GraphDatabaseService graphdb() {
-        return db;
+    @Test
+    public void shouldQueryDbForFriendsWithJava() throws IOException {
+        Response response = service.getFriendsJava("B", graphDb);
+        List list = objectMapper.readValue((String) response.getEntity(), List.class);
+        assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<String>(list));
     }
+
 }
