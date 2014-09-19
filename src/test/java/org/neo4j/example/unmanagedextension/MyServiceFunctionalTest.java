@@ -41,10 +41,6 @@ public class MyServiceFunctionalTest {
         List list = objectMapper.readValue(response.getEntity(), List.class);
         assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<String>(list));
 
-        assertEquals((Long)4L, ((Long)new ExecutionEngine(server.getDatabase().getGraph())
-                .execute("MATCH (n) WHERE n.lastModified > 0 RETURN count(n)")
-                .iterator().next().get("count(n)")));
-
         server.stop();
     }
 

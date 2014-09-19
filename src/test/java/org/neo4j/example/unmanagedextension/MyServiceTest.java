@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.cypher.javacompat.internal.ServerExecutionEngine;
 import org.neo4j.graphdb.*;
 import org.neo4j.server.database.CypherExecutor;
 import org.neo4j.test.ImpermanentGraphDatabase;
@@ -36,7 +37,7 @@ public class MyServiceTest {
         graphDb = new ImpermanentGraphDatabase();
         populateDb(graphDb);
         service = new MyService();
-        when(cypherExecutor.getExecutionEngine()).thenReturn(new ExecutionEngine(graphDb));
+        when(cypherExecutor.getExecutionEngine()).thenReturn(new ServerExecutionEngine(graphDb));
     }
 
     private void populateDb(GraphDatabaseService db) {
