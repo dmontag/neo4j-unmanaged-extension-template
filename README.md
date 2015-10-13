@@ -17,5 +17,5 @@ This is an unmanaged extension.
 
 5. Query it over HTTP:
 
-        curl http://localhost:7474/example/helloworld
+        curl http://localhost:7474/example/service/helloworld
 
