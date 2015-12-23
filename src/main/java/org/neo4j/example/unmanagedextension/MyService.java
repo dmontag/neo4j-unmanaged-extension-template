@@ -1,11 +1,8 @@
 package org.neo4j.example.unmanagedextension;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.IteratorUtil;
-import org.neo4j.server.database.CypherExecutor;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,13 +10,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Path("/service")
 public class MyService {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     enum Labels implements Label {
         Person
@@ -37,12 +33,11 @@ public class MyService {
 
     @GET
     @Path("/friendsCypher/{name}")
-    public Response getFriendsCypher(@PathParam("name") String name, @Context CypherExecutor cypherExecutor) throws IOException {
-        ExecutionEngine executionEngine = cypherExecutor.getExecutionEngine();
-        ExecutionResult result = executionEngine.execute("MATCH (p:Person)-[:KNOWS]-(friend) WHERE p.name = {n} RETURN friend.name",
+    public Response getFriendsCypher(@PathParam("name") String name, @Context GraphDatabaseService db) throws IOException {
+        Result result = db.execute("MATCH (p:Person)-[:KNOWS]-(friend) WHERE p.name = {n} RETURN friend.name",
                 Collections.<String, Object>singletonMap("n", name));
-        List<String> friendNames = new ArrayList<String>();
-        for (Map<String, Object> item : result) {
+        List<String> friendNames = new ArrayList<>();
+        for (Map<String, Object> item : IteratorUtil.asIterable(result)) {
             friendNames.add((String) item.get("friend.name"));
         }
         ObjectMapper objectMapper = new ObjectMapper();
@@ -56,7 +51,7 @@ public class MyService {
         List<String> friendNames = new ArrayList<>();
 
         try (Transaction tx = db.beginTx()) {
-            Node person = IteratorUtil.single(db.findNodesByLabelAndProperty(Labels.Person, "name", name));
+            Node person = IteratorUtil.single(db.findNodes(Labels.Person, "name", name));
 
             for (Relationship knowsRel : person.getRelationships(RelTypes.KNOWS, Direction.BOTH)) {
                 Node friend = knowsRel.getOtherNode(person);

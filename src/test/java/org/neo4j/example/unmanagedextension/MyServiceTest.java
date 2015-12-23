@@ -12,6 +12,7 @@ import org.neo4j.cypher.javacompat.internal.ServerExecutionEngine;
 import org.neo4j.graphdb.*;
 import org.neo4j.server.database.CypherExecutor;
 import org.neo4j.test.ImpermanentGraphDatabase;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class MyServiceTest {
 
-    private ImpermanentGraphDatabase graphDb;
+    private GraphDatabaseService graphDb;
     private MyService service;
     private ObjectMapper objectMapper = new ObjectMapper();
     private static final RelationshipType KNOWS = DynamicRelationshipType.withName("KNOWS");
@@ -34,35 +35,9 @@ public class MyServiceTest {
 
     @Before
     public void setUp() {
-        graphDb = new ImpermanentGraphDatabase();
+        graphDb = new TestGraphDatabaseFactory().newImpermanentDatabase();
         populateDb(graphDb);
         service = new MyService();
-        when(cypherExecutor.getExecutionEngine()).thenReturn(new ServerExecutionEngine(graphDb));
-    }
-
-    private void populateDb(GraphDatabaseService db) {
-        Transaction tx = db.beginTx();
-        try
-        {
-            Node personA = createPerson(db, "A");
-            Node personB = createPerson(db, "B");
-            Node personC = createPerson(db, "C");
-            Node personD = createPerson(db, "D");
-            personA.createRelationshipTo(personB, KNOWS);
-            personB.createRelationshipTo(personC, KNOWS);
-            personC.createRelationshipTo(personD, KNOWS);
-            tx.success();
-        }
-        finally
-        {
-            tx.finish();
-        }
-    }
-
-    private Node createPerson(GraphDatabaseService db, String name) {
-        Node node = db.createNode(MyService.Labels.Person);
-        node.setProperty("name", name);
-        return node;
     }
 
     @After
@@ -78,16 +53,36 @@ public class MyServiceTest {
 
     @Test
     public void shouldQueryDbForFriendsWithCypher() throws IOException {
-        Response response = service.getFriendsCypher("B", cypherExecutor);
+        Response response = service.getFriendsCypher("B", graphDb);
         List list = objectMapper.readValue((String) response.getEntity(), List.class);
-        assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<String>(list));
+        assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<>(list));
     }
 
     @Test
     public void shouldQueryDbForFriendsWithJava() throws IOException {
         Response response = service.getFriendsJava("B", graphDb);
         List list = objectMapper.readValue((String) response.getEntity(), List.class);
-        assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<String>(list));
+        assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<>(list));
+    }
+
+    private void populateDb(GraphDatabaseService db) {
+        try(Transaction tx = db.beginTx())
+        {
+            Node personA = createPerson(db, "A");
+            Node personB = createPerson(db, "B");
+            Node personC = createPerson(db, "C");
+            Node personD = createPerson(db, "D");
+            personA.createRelationshipTo(personB, KNOWS);
+            personB.createRelationshipTo(personC, KNOWS);
+            personC.createRelationshipTo(personD, KNOWS);
+            tx.success();
+        }
+    }
+
+    private Node createPerson(GraphDatabaseService db, String name) {
+        Node node = db.createNode(MyService.Labels.Person);
+        node.setProperty("name", name);
+        return node;
     }
 
 }

@@ -2,11 +2,16 @@ package org.neo4j.example.unmanagedextension;
 
 import com.sun.jersey.api.client.Client;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.TestServerBuilders;
 import org.neo4j.server.NeoServer;
+import org.neo4j.server.configuration.ServerSettings;
 import org.neo4j.server.helpers.CommunityServerBuilder;
 import org.neo4j.server.rest.JaxRsResponse;
 import org.neo4j.server.rest.RestRequest;
@@ -27,21 +32,25 @@ public class MyServiceFunctionalTest {
 
     private static final RelationshipType KNOWS = DynamicRelationshipType.withName("KNOWS");
 
+    private ServerControls newTestDb() {
+        return TestServerBuilders
+                .newInProcessBuilder()
+                .withExtension(MOUNT_POINT, MyService.class)
+                .newServer();
+    }
+
     @Test
     public void shouldReturnFriends() throws IOException {
-        NeoServer server = CommunityServerBuilder.server()
-                .withThirdPartyJaxRsPackage("org.neo4j.example.unmanagedextension", MOUNT_POINT)
-                .build();
-        server.start();
-        populateDb(server.getDatabase().getGraph());
-        RestRequest restRequest = new RestRequest(server.baseUri().resolve(MOUNT_POINT), CLIENT);
-        JaxRsResponse response = restRequest.get("service/friendsCypher/B");
-        System.out.println(response.getEntity());
+        try ( ServerControls server = newTestDb()) {
+            populateDb(server.graph());
 
-        List list = objectMapper.readValue(response.getEntity(), List.class);
-        assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<String>(list));
+            RestRequest restRequest = new RestRequest(server.httpURI().resolve(MOUNT_POINT), CLIENT);
+            JaxRsResponse response = restRequest.get("service/friendsCypher/B");
+            System.out.println(response.getEntity());
 
-        server.stop();
+            List list = objectMapper.readValue(response.getEntity(), List.class);
+            assertEquals(new HashSet<>(Arrays.asList("A", "C")), new HashSet<>(list));
+        }
     }
 
     private void populateDb(GraphDatabaseService db) {
@@ -64,5 +73,6 @@ public class MyServiceFunctionalTest {
         node.setProperty("name", name);
         return node;
     }
+
 
 }
