@@ -1,18 +1,11 @@
-package org.neo4j.example.unmanagedextension;
+package com.neo4j.example.extension;
 
 import com.sun.jersey.api.client.Client;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.*;
-import org.neo4j.graphdb.index.Index;
 import org.neo4j.harness.ServerControls;
 import org.neo4j.harness.TestServerBuilders;
-import org.neo4j.server.NeoServer;
-import org.neo4j.server.configuration.ServerSettings;
-import org.neo4j.server.helpers.CommunityServerBuilder;
 import org.neo4j.server.rest.JaxRsResponse;
 import org.neo4j.server.rest.RestRequest;
 
@@ -22,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class MyServiceFunctionalTest {
 

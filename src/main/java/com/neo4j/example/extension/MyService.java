@@ -1,8 +1,8 @@
-package org.neo4j.example.unmanagedextension;
+package com.neo4j.example.extension;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.neo4j.graphdb.*;
-import org.neo4j.helpers.collection.IteratorUtil;
+import org.neo4j.helpers.collection.Iterators;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -37,7 +37,7 @@ public class MyService {
         Result result = db.execute("MATCH (p:Person)-[:KNOWS]-(friend) WHERE p.name = {n} RETURN friend.name",
                 Collections.<String, Object>singletonMap("n", name));
         List<String> friendNames = new ArrayList<>();
-        for (Map<String, Object> item : IteratorUtil.asIterable(result)) {
+        for (Map<String, Object> item : Iterators.asIterable(result)) {
             friendNames.add((String) item.get("friend.name"));
         }
         ObjectMapper objectMapper = new ObjectMapper();
@@ -51,7 +51,7 @@ public class MyService {
         List<String> friendNames = new ArrayList<>();
 
         try (Transaction tx = db.beginTx()) {
-            Node person = IteratorUtil.single(db.findNodes(Labels.Person, "name", name));
+            Node person = Iterators.single(db.findNodes(Labels.Person, "name", name));
 
             for (Relationship knowsRel : person.getRelationships(RelTypes.KNOWS, Direction.BOTH)) {
                 Node friend = knowsRel.getOtherNode(person);
