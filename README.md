@@ -9,7 +9,7 @@ This is an unmanaged extension.
 
 2. Copy target/unmanaged-extension-template-1.0.jar to the plugins/ directory of your Neo4j server.
 
-3. Configure Neo4j by adding a line to conf/neo4j-server.properties:
+3. Configure Neo4j by adding a line to conf/neo4j.conf:
 
         dbms.unmanaged_extension_classes=org.neo4j.example.unmanagedextension=/example
 
