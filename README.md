@@ -11,7 +11,7 @@ This is an unmanaged extension.
 
 3. Configure Neo4j by adding a line to conf/neo4j.conf:
 
-        dbms.unmanaged_extension_classes=org.neo4j.example.unmanagedextension=/example
+        dbms.unmanaged_extension_classes=com.neo4j.example.extension=/example
 
 4. Start Neo4j server.
 
