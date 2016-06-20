@@ -40,7 +40,6 @@ public class MyService {
         for (Map<String, Object> item : Iterators.asIterable(result)) {
             friendNames.add((String) item.get("friend.name"));
         }
-        ObjectMapper objectMapper = new ObjectMapper();
         return Response.ok().entity(objectMapper.writeValueAsString(friendNames)).build();
     }
 
@@ -59,8 +58,6 @@ public class MyService {
             }
             tx.success();
         }
-
-        ObjectMapper objectMapper = new ObjectMapper();
         return Response.ok().entity(objectMapper.writeValueAsString(friendNames)).build();
     }
 }
