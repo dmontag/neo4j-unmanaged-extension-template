@@ -22,7 +22,7 @@ public class MyServiceFunctionalTest {
     public static final String MOUNT_POINT = "/ext";
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final RelationshipType KNOWS = DynamicRelationshipType.withName("KNOWS");
+    private static final RelationshipType KNOWS = RelationshipType.withName("KNOWS");
 
     private ServerControls newTestDb() {
         return TestServerBuilders

@@ -25,7 +25,7 @@ public class MyServiceTest {
     private GraphDatabaseService graphDb;
     private MyService service;
     private ObjectMapper objectMapper = new ObjectMapper();
-    private static final RelationshipType KNOWS = DynamicRelationshipType.withName("KNOWS");
+    private static final RelationshipType KNOWS = RelationshipType.withName("KNOWS");
     @Mock
     private CypherExecutor cypherExecutor;
 
